@@ -1,0 +1,85 @@
+unit FRM_LOGIN;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, ADODB, StdCtrls;
+
+type
+  TForm1 = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    txtUsuario: TEdit;
+    txtContrasenna: TEdit;
+    btnIngresar: TButton;
+    ADOConnection1: TADOConnection;
+    ADOQuery1: TADOQuery;
+    procedure btnIngresarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+uses FRM_USUARIO;
+
+{$R *.dfm}
+
+//encriptar datos
+function encriptar(aStr: String; aKey: Integer): String;
+begin
+   Result:='';
+   RandSeed:=aKey;
+   for aKey:=1 to Length(aStr) do
+       Result:=Result+Chr(Byte(aStr[aKey]) xor random(256));
+end;
+
+//desencriptar datos
+function desencriptar(aStr: String; aKey: Integer): String;
+begin
+   Result:='';
+   RandSeed:=aKey;
+   for aKey:=1 to Length(aStr) do
+       Result:=Result+Chr(Byte(aStr[aKey]) xor random(256));
+end;
+
+
+procedure TForm1.btnIngresarClick(Sender: TObject);
+  var desencriptado : string;
+  begin
+    if(txtUsuario.Text='') and (txtContrasenna.Text='')then
+      begin
+        ShowMessage('llene todos los campos');
+      end
+    else
+      begin
+        desencriptado:=desencriptar(txtContrasenna.Text,10);
+        ADOQuery1.SQL.Clear;
+        ADOQuery1.SQL.Add('SELECT * FROM usuario WHERE idUsuario =:USUARIO and contrasennaUsuario=:CONTRASENNA');
+        ADOQuery1.parameters.ParamByName('USUARIO').Value:=txtUsuario.text;
+        ADOQuery1.Parameters.ParamByName('CONTRASENNA').Value:=desencriptado;
+        ADOQuery1.Open;
+
+        if(ADOQuery1.FieldByName('idUsuario').AsString=txtUsuario.Text) and (ADOQuery1.FieldByName('contrasennaUsuario').AsString=txtContrasenna.Text) then
+          begin
+            ShowMessage('datos correctos');
+            FormUsuario.show;
+          end
+        else
+          begin
+            ShowMessage('datos incorrectos');
+            txtUsuario.Text:='';
+            txtContrasenna.Text:='';
+            txtUsuario.SetFocus;
+          end;
+      end;
+
+  end;
+
+end.

@@ -1,0 +1,18 @@
+program CRUD_USUARIIO;
+
+uses
+  Forms,
+  FRM_USUARIO in 'FRM_USUARIO.pas' {FormUsuario},
+  U_DATAMODULO in 'U_DATAMODULO.pas' {DataModule2: TDataModule},
+  FRM_LOGIN in 'FRM_LOGIN.pas' {Form1};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TDataModule2, DataModule2);
+  Application.CreateForm(TFormUsuario, FormUsuario);
+
+  Application.Run;
+end.

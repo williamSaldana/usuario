@@ -1,0 +1,62 @@
+unit FRM_LOGIN;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, DB, ADODB, StdCtrls;
+
+type
+  TForm1 = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    txtUsuario: TEdit;
+    txtContrasenna: TEdit;
+    btnIngresar: TButton;
+    ADOConnection1: TADOConnection;
+    ADOQuery1: TADOQuery;
+    procedure btnIngresarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+uses FRM_USUARIO;
+
+{$R *.dfm}
+
+procedure TForm1.btnIngresarClick(Sender: TObject);
+  begin
+    if(txtUsuario.Text='') and (txtContrasenna.Text='')then
+      begin
+        ShowMessage('llene todos los campos');
+      end
+    else
+      begin
+        ADOQuery1.SQL.Clear;
+        ADOQuery1.SQL.Add('SELECT * FROM usuario WHERE idUsuario =:USUARIO and contrasennaUsuario=:CONTRASENNA');
+        ADOQuery1.parameters.ParamByName('USUARIO').Value:=txtUsuario.text;
+        ADOQuery1.Parameters.ParamByName('CONTRASENNA').Value:=txtContrasenna.Text;
+        ADOQuery1.Open;
+
+        if(ADOQuery1.FieldByName('idUsuario').AsString=txtUsuario.Text) and (ADOQuery1.FieldByName('contrasennaUsuario').AsString=txtContrasenna.Text) then
+          begin
+            ShowMessage('datos correctos');
+            FormUsuario.show;
+          end
+        else
+          begin
+            ShowMessage('datos incorrectos');
+
+          end;
+      end;
+
+  end;
+
+end.
