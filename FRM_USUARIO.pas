@@ -38,13 +38,6 @@ type
     ADOQuery3: TADOQuery;
     ADOQuery4: TADOQuery;
     DateTimePicker1: TDateTimePicker;
-    ADOQuery1idUsuario: TIntegerField;
-    ADOQuery1nombreUsuario: TStringField;
-    ADOQuery1telefonoUsuario: TStringField;
-    ADOQuery1fechaNacimiento: TDateTimeField;
-    ADOQuery1edadUsuario: TIntegerField;
-    ADOQuery1ciudadUsuario: TIntegerField;
-    ADOQuery1contrasennaUsuario: TStringField;
     ADOQuery4idUsuario: TIntegerField;
     ADOQuery4nombreUsuario: TStringField;
     ADOQuery4telefonoUsuario: TStringField;
@@ -52,6 +45,13 @@ type
     ADOQuery4edadUsuario: TIntegerField;
     ADOQuery4ciudadUsuario: TIntegerField;
     ADOQuery4contrasennaUsuario: TStringField;
+    ADOQueryConsulta: TADOQuery;
+    ADOQuery1Codigo: TIntegerField;
+    ADOQuery1Nombre: TStringField;
+    ADOQuery1Telefono: TStringField;
+    ADOQuery1Fecha_Nacimiento: TDateTimeField;
+    ADOQuery1Edad: TIntegerField;
+    ADOQuery1Ciudad: TStringField;
     procedure btnCrearClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure txtCodigoExit(Sender: TObject);
@@ -64,6 +64,8 @@ type
     procedure txtTelefonoKeyPress(Sender: TObject; var Key: Char);
     procedure txtEdadKeyPress(Sender: TObject; var Key: Char);
     procedure DateTimePicker1Change(Sender: TObject);
+    procedure DBGrid1CellClick(Column: TColumn);
+    procedure cmbDepartamentoClick(Sender: TObject);
   private
     { Private declarations }
     procedure ActualizarConsulta;
@@ -80,153 +82,155 @@ type
 
 var
   FormUsuario: TFormUsuario;
+
 const
- C1 = 52845;
- C2 = 11719;
+  C1 = 52845;
+  C2 = 11719;
+
 implementation
 
 uses U_DATAMODULO;
 
 {$R *.dfm}
 
-//encriptar datos
+// encriptar datos
 function encriptar(const S: String; Key: Word): String;
 var
-        I: byte;
-      begin
-        SetLength(Result,Length(S));
-        for I := 1 to Length(S) do begin
-          Result[I] := char(byte(S[I]) xor (Key shr 8));
-          Key := (byte(Result[I]) + Key) * C1 + C2;
-        end;
+  I: byte;
+begin
+  SetLength(Result, Length(S));
+  for I := 1 to Length(S) do
+  begin
+    Result[I] := Char(byte(S[I]) xor (Key shr 8));
+    Key := (byte(Result[I]) + Key) * C1 + C2;
+  end;
 end;
 
-
-
 procedure TFormUsuario.ActualizarConsulta;
- begin
-   ADOQuery1.SQL.Clear;
-   ADOQuery1.SQL.Add('SELECT * FROM usuario');
-   ADOQuery1.Open;
- end;
+begin
+  ADOQuery1.SQL.Clear;
+  ADOQuery1.SQL.Add
+    ('SELECT idUsuario as Codigo,nombreUsuario as Nombre,telefonoUsuario as Telefono,fechaNacimiento as Fecha_Nacimiento,edadUsuario as Edad, nombreCiudad as Ciudad FROM usuario inner join ciudad on idCiudad = ciudadUsuario');
+  ADOQuery1.Open;
+end;
 
 procedure TFormUsuario.LimpiarCampos;
- begin
-   txtCodigo.Text:='';
-   txtNombre.Text:='';
-   txtTelefono.Text:='';
-   txtEdad.Text:='';
-   txtContrasenna.Text:='';
-   cmbDepartamento.KeyValue:=Null;
-   cmbCiudad.KeyValue:=Null;
-   DateTimePicker1.Date:=Now;
- end;
+begin
+  txtCodigo.Text := '';
+  txtNombre.Text := '';
+  txtTelefono.Text := '';
+  txtEdad.Text := '';
+  txtContrasenna.Text := '';
+  cmbDepartamento.KeyValue := Null;
+  cmbCiudad.KeyValue := Null;
+  DateTimePicker1.Date := StrToDate('01/01/1900');
+end;
 
 procedure TFormUsuario.BloquearCampos;
- begin
-   txtNombre.Enabled:=false;
-   txtNombre.Color:=clGray;
-   txtTelefono.Enabled:=false;
-   txtTelefono.Color:=clGray;
-   DateTimePicker1.Enabled:=false;
-   DateTimePicker1.Color:=clGray;
-   txtEdad.Enabled:=false;
-   txtEdad.Color:=clGray;
-   txtContrasenna.Enabled:=false;
-   txtContrasenna.Color:=clGray;
-   cmbDepartamento.Enabled:=false;
-   cmbDepartamento.Color:=clGrayText;
-   cmbCiudad.Enabled:=False;
-   cmbCiudad.Color:=clGrayText;
-   DateTimePicker1.Enabled:=false;
- end;
+begin
+  txtNombre.Enabled := false;
+  txtNombre.Color := clGray;
+  txtTelefono.Enabled := false;
+  txtTelefono.Color := clGray;
+  DateTimePicker1.Enabled := false;
+  DateTimePicker1.Color := clGray;
+  txtEdad.Enabled := false;
+  txtEdad.Color := clSilver;
+  txtContrasenna.Enabled := false;
+  txtContrasenna.Color := clGray;
+  cmbDepartamento.Enabled := false;
+  cmbDepartamento.Color := clGrayText;
+  cmbCiudad.Enabled := false;
+  cmbCiudad.Color := clGrayText;
+  DateTimePicker1.Enabled := false;
+end;
 
 procedure TFormUsuario.HabilitarCampos;
- begin
-   txtNombre.Enabled:=true;
-   txtNombre.Color:=clWhite;
-   txtTelefono.Enabled:=true;
-   txtTelefono.Color:=clWhite;
-   DateTimePicker1.Enabled:=true;
-   DateTimePicker1.Color:=clWhite;
-   txtEdad.Enabled:=true;
-   txtEdad.Color:=clWhite;
-   txtContrasenna.Enabled:=true;
-   txtContrasenna.Color:=clWhite;
-   txtNombre.SetFocus;
-   ADOQueryDepartamento.Open;
-   cmbDepartamento.Enabled:=true;
-   cmbDepartamento.Color:=clWhite;
-   cmbCiudad.Enabled:=False;
-   cmbCiudad.Color:=clWhite;
-   DateTimePicker1.Enabled:=true;
- end;
+begin
+  txtNombre.Enabled := true;
+  txtNombre.Color := clWhite;
+  txtTelefono.Enabled := true;
+  txtTelefono.Color := clWhite;
+  DateTimePicker1.Enabled := true;
+  DateTimePicker1.Color := clWhite;
+//  txtEdad.Enabled := true;
+  txtEdad.Color := clSilver;
+  txtContrasenna.Enabled := true;
+  txtContrasenna.Color := clWhite;
+  txtNombre.SetFocus;
+  ADOQueryDepartamento.Open;
+  cmbDepartamento.Enabled := true;
+  cmbDepartamento.Color := clWhite;
+  cmbCiudad.Enabled := false;
+  cmbCiudad.Color := clWhite;
+  DateTimePicker1.Enabled := true;
+end;
 
 procedure TFormUsuario.BloqueoNumeros;
-  begin
+begin
 
-  end;
+end;
 
 procedure TFormUsuario.HabilitarCiudad;
-  begin
+begin
   ADOQueryDepartamento.SQL.Clear;
   ADOQueryDepartamento.SQL.Add('select * from departamento');
   ADOQueryDepartamento.Open;
 
-
-
-   ADOQuery2.Close;
-   ADOQuery2.SQL.Clear;
-   ADOQuery2.SQL.Add('SELECT * FROM ciudad WHERE idCiudad=:Codigo ');
-   ADOQuery2.Parameters.ParamByName('Codigo').Value:=Trim(cmbDepartamento.KeyValue);
-   ADOQuery2.Open;
-   cmbCiudad.Enabled:=True;
-   cmbCiudad.SetFocus;
-  end;
-
+  ADOQuery2.Close;
+  ADOQuery2.SQL.Clear;
+  ADOQuery2.SQL.Add('SELECT * FROM ciudad WHERE idCiudad=:Codigo ');
+  ADOQuery2.Parameters.ParamByName('Codigo').Value :=
+    Trim(cmbDepartamento.KeyValue);
+  ADOQuery2.Open;
+  cmbCiudad.Enabled := true;
+  cmbCiudad.SetFocus;
+end;
 
 procedure TFormUsuario.Calcularedad;
- var
-  fecha,fecha2 : TDate;
-  day,month,year : word;
-  day2,month2,year2 : word;
-  edad : Integer;
+var
+  fecha, fecha2: TDate;
+  day, month, year: Word;
+  day2, month2, year2: Word;
+  edad: Integer;
 begin
-  fecha2:=date;
-  fecha:=DateTimePicker1.Date;
-  DecodeDate(fecha,year,month,day);
-  DecodeDate(fecha2,year2,month2,day2);
-  edad:=year2-year;
-  txtEdad.Text:=IntToStr(edad);
+  fecha2 := Date;
+  fecha := DateTimePicker1.Date;
+  DecodeDate(fecha, year, month, day);
+  DecodeDate(fecha2, year2, month2, day2);
+  edad := year2 - year;
+  txtEdad.Text := IntToStr(edad);
 
 end;
 
 procedure TFormUsuario.btnCrearClick(Sender: TObject);
-  var encode:string;
+var
+  encode: string;
 begin
 
- if (txtCodigo.Text='') then
+  if (txtCodigo.Text = '') then
 
   begin
-   ShowMessage('Ingrese el codigo');
-   Exit;
+    ShowMessage('Ingrese el codigo');
+    Exit;
   end
 
- else
-  ADOQuery1.Close;
-  ADOQuery1.SQL.Clear;
-  ADOQuery1.SQL.Add('SELECT * FROM usuario WHERE idUsuario =:Codigo' );
-  adoquery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-  ADOQuery1.Open;
+  else
+    ADOQueryConsulta.Close;
+  ADOQueryConsulta.SQL.Clear;
+  ADOQueryConsulta.SQL.Add('SELECT * FROM usuario WHERE idUsuario =:Codigo');
+  ADOQueryConsulta.Parameters.ParamByName('Codigo').Value :=
+    Trim(txtCodigo.Text);
+  ADOQueryConsulta.Open;
 
-  if(txtCodigo.Text = ADOQuery1.FieldByName('idUsuario').AsString)then
-   begin
-     ShowMessage('El usuario :Codigo , :Nombre ya esta registrado');
-     adoquery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-     ADOQuery1.Parameters.ParamByName('Nombre').Value:=Trim(txtNombre.Text);
-     ActualizarConsulta;
-     Exit;
-   end
+  if (txtCodigo.Text = ADOQueryConsulta.FieldByName('idUsuario').AsString) then
+  begin
+    ShowMessage('El usuario :Codigo , :Nombre ya esta registrado');
+    ADOQuery1.Parameters.ParamByName('Codigo').Value := Trim(txtCodigo.Text);
+    ADOQuery1.Parameters.ParamByName('Nombre').Value := Trim(txtNombre.Text);
+    ActualizarConsulta;
+    Exit;
+  end
 
   else
 
@@ -234,116 +238,163 @@ begin
       DataModule2.ADOConnection1.BeginTrans;
 
       ADOQuery1.SQL.Clear;
-      ADOQuery1.SQL.Add('INSERT INTO usuario VALUES '+
-      '(:Codigo,:Nombre,:Telefono,:Fecha,:Edad,:Ciudad,:Contrasenna)');
-      encode:=encriptar(txtContrasenna.Text,10);
-      ADOQuery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-      ADOQuery1.Parameters.ParamByName('Nombre').Value:=Trim(txtNombre.Text);
-      ADOQuery1.Parameters.ParamByName('Telefono').Value:=Trim(txtTelefono.Text);
-      ADOQuery1.Parameters.ParamByName('Fecha').Value:=DateToStr(DateTimePicker1.Date);
-      ADOQuery1.Parameters.ParamByName('Edad').Value:=Trim(txtEdad.Text);
-      ADOQuery1.Parameters.ParamByName('Ciudad').Value:=Trim(cmbCiudad.KeyValue);
-      ADOQuery1.Parameters.ParamByName('Contrasenna').Value:=Trim(encode);
+      ADOQuery1.SQL.Add('INSERT INTO usuario VALUES ' +
+        '(:Codigo,:Nombre,:Telefono,:Fecha,:Edad,:Ciudad,:Contrasenna)');
+      encode := encriptar(txtContrasenna.Text, 10);
+      ADOQuery1.Parameters.ParamByName('Codigo').Value := Trim(txtCodigo.Text);
+      ADOQuery1.Parameters.ParamByName('Nombre').Value := Trim(txtNombre.Text);
+      ADOQuery1.Parameters.ParamByName('Telefono').Value :=
+        Trim(txtTelefono.Text);
+      ADOQuery1.Parameters.ParamByName('Fecha').Value :=
+        DateToStr(DateTimePicker1.Date);
+      ADOQuery1.Parameters.ParamByName('Edad').Value := Trim(txtEdad.Text);
+      ADOQuery1.Parameters.ParamByName('Ciudad').Value :=
+        Trim(cmbCiudad.KeyValue);
+      ADOQuery1.Parameters.ParamByName('Contrasenna').Value := Trim(encode);
       ADOQuery1.ExecSQL;
 
       DataModule2.ADOConnection1.CommitTrans;
     EXCEPT
       DataModule2.ADOConnection1.RollbackTrans;
 
-      EXIT;
+      Exit;
     END;
 
-    ActualizarConsulta;
-    LimpiarCampos;
-    BloquearCampos;
-    ShowMessage('Se registro con exito');
-    txtCodigo.SetFocus;
+  ActualizarConsulta;
+  LimpiarCampos;
+  BloquearCampos;
+  ShowMessage('Se registro con exito');
+  txtCodigo.SetFocus;
 end;
 
 procedure TFormUsuario.FormCreate(Sender: TObject);
 begin
   BloquearCampos;
-  DateTimePicker1.Date:=Now;
+  txtContrasenna.Visible := false;
+  Label7.Visible := false;
+  DateTimePicker1.Date := StrToDate('01/01/1900');
 end;
 
 procedure TFormUsuario.txtCodigoExit(Sender: TObject);
 begin
 
-   if (txtCodigo.Text='') then
-     begin
-       ShowMessage('Ingrese el codigo');
-       Exit;
-     end
-   else
+  if (txtCodigo.Text = '') then
+  begin
+    ShowMessage('Ingrese el codigo');
+    Exit;
+  end
+  else
+  begin
+    ADOQuery1.Close;
+    ADOQuery1.SQL.Clear;
+    ADOQuery1.SQL.Add
+      ('SELECT idUsuario as Codigo,nombreUsuario as Nombre,telefonoUsuario as Telefono,fechaNacimiento as Fecha_Nacimiento,edadUsuario as Edad, nombreCiudad as Ciudad '
+      + 'FROM usuario inner join ciudad on idCiudad = ciudadUsuario WHERE idUsuario =:Codigo');
+    ADOQuery1.Parameters.ParamByName('Codigo').Value := Trim(txtCodigo.Text);
+    ADOQuery1.Open;
+
+    if (txtCodigo.Text = ADOQuery1.FieldByName('Codigo').AsString) then
     begin
-      ADOQuery1.Close;
-      ADOQuery1.SQL.Clear;
-      ADOQuery1.SQL.Add('SELECT * FROM usuario WHERE idUsuario =:Codigo' );
-      adoquery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-      ADOQuery1.Open;
+      ShowMessage('El codigo ''' + txtCodigo.Text + ''' ya esta registrado');
 
-        if(txtCodigo.Text = ADOQuery1.FieldByName('idUsuario').AsString)then
-         begin
-           ShowMessage('El codigo '''+txtCodigo.Text+''' ya esta registrado');
+    end
+  end;
+  ADOQueryDepartamento.Open;
+  HabilitarCampos;
 
-         end
+  if (txtCodigo.Text = '') then
+  begin
+    ShowMessage('Inserte el codigo');
+    Exit;
+  end
+  else
+  begin
+    ADOQueryConsulta.SQL.Clear;
+    ADOQueryConsulta.SQL.Add('SELECT * from usuario WHERE idUsuario =:Codigo');
+    ADOQueryConsulta.Parameters.ParamByName('Codigo').Value :=
+      Trim(txtCodigo.Text);
+    ADOQueryConsulta.Open;
+
+    if not ADOQuery1.Eof then
+    begin
+      txtCodigo.Text := ADOQueryConsulta.FieldByName('idUsuario').AsString;
+      txtNombre.Text := ADOQueryConsulta.FieldByName('nombreUsuario').AsString;
+      txtTelefono.Text := ADOQueryConsulta.FieldByName
+        ('telefonoUsuario').AsString;
+      DateTimePicker1.Date := ADOQuery1Fecha_Nacimiento.Value;
+      Calcularedad;
+      cmbCiudad.KeyValue := ADOQueryConsulta.FieldByName
+        ('ciudadUsuario').AsString;
+
+      ADOQuery3.SQL.Clear;
+      ADOQuery3.SQL.Add
+        ('SELECT * FROM ciudad WHERE departamentoCiudad=:Ciudad');
+      ADOQuery3.Parameters.ParamByName('Ciudad').Value :=
+        Trim(ADOQueryConsulta.FieldByName('ciudadUsuario').Value);
+      ADOQuery3.Open;
+
+      cmbDepartamento.KeyValue := ADOQuery3.FieldByName
+        ('departamentoCiudad').AsString;
+      HabilitarCiudad;
+      Calcularedad;
+      ActualizarConsulta;
+      Exit;
     end;
-    ADOQueryDepartamento.open;
-    HabilitarCampos;
+  end;
 
-    if(txtCodigo.Text='') then
-     begin
-       ShowMessage('Inserte el codigo');
-       Exit;
-     end
-    else
-     begin
-       ADOQuery1.SQL.Clear;
-       ADOQuery1.SQL.Add('SELECT * FROM usuario WHERE idUsuario =:Codigo');
-       ADOQuery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-       ADOQuery1.Open;
+  ActualizarConsulta;
 
-       if not ADOQuery1.Eof then
-        begin
-          txtCodigo.Text:= ADOQuery1.FieldByName('idUsuario').AsString;
-          txtNombre.Text:= ADOQuery1.FieldByName('nombreUsuario').AsString;
-          txtTelefono.Text:= ADOQuery1.FieldByName('telefonoUsuario').AsString;
-          DateTimePicker1.Date:=ADOQuery1fechaNacimiento.Value;
-          txtEdad.Text:= ADOQuery1.FieldByName('edadUsuario').AsString;
-          cmbCiudad.KeyValue:=ADOQuery1.FieldByName('ciudadUsuario').AsString;
-          txtContrasenna.Text:=ADOQuery1.FieldByName('contrasennaUsuario').AsString;
+  Exit;
+  HabilitarCampos;
+  cmbCiudad.Enabled := false;
 
-          ADOQuery3.SQL.Clear;
-          ADOQuery3.SQL.Add('SELECT * FROM ciudad WHERE departamentoCiudad=:Ciudad');
-          ADOQuery3.Parameters.ParamByName('Ciudad').Value:=Trim(ADOQuery1.FieldByName('ciudadUsuario').AsString);
-          ADOQuery3.Open;
+end;
 
-          cmbDepartamento.KeyValue:=ADOQuery3.FieldByName('departamentoCiudad').AsString;
-          HabilitarCiudad;
-          Calcularedad;
-          ActualizarConsulta;
-          Exit;
-        end;
-     end;
-
-     ActualizarConsulta;
-
-     Exit;
-    HabilitarCampos;
-    cmbCiudad.Enabled:=False;
-
+procedure TFormUsuario.cmbDepartamentoClick(Sender: TObject);
+begin
+  HabilitarCiudad;
 end;
 
 procedure TFormUsuario.cmbDepartamentoExit(Sender: TObject);
 begin
- HabilitarCiudad;
+  HabilitarCiudad;
 end;
 
 procedure TFormUsuario.DateTimePicker1Change(Sender: TObject);
- begin
-   Calcularedad;
+begin
+  Calcularedad;
 
- end;
+end;
+
+procedure TFormUsuario.DBGrid1CellClick(Column: TColumn);
+begin
+  HabilitarCampos;
+
+  ADOQuery3.SQL.Clear;
+  ADOQuery3.SQL.Add('SELECT idDepartamento FROM departamento ' +
+    'INNER JOIN ciudad on idDepartamento=departamentoCiudad ' +
+    'INNER JOIN usuario on idCiudad=ciudadUsuario where nombreCiudad=:Ciudad;');
+  ADOQuery3.Parameters.ParamByName('Ciudad').Value :=
+    DBGrid1.DataSource.DataSet.Fields[5].Value;
+  ADOQuery3.Open;
+
+  ADOQueryConsulta.SQL.Clear;
+  ADOQueryConsulta.SQL.Add
+    ('select idCiudad from ciudad where nombreCiudad=:Nombre');
+  ADOQueryConsulta.Parameters.ParamByName('Nombre').Value :=
+    DBGrid1.DataSource.DataSet.Fields[5].Value;
+  ADOQueryConsulta.Open;
+
+  txtCodigo.Text := DBGrid1.DataSource.DataSet.Fields[0].Value;
+  txtNombre.Text := DBGrid1.DataSource.DataSet.Fields[1].Value;
+  txtTelefono.Text := DBGrid1.DataSource.DataSet.Fields[2].Value;
+  DateTimePicker1.Date := DBGrid1.DataSource.DataSet.Fields[3].Value;
+  Calcularedad;
+  cmbDepartamento.KeyValue := ADOQuery3.FieldByName('idDepartamento').Value;
+  HabilitarCiudad;
+  cmbCiudad.KeyValue := ADOQueryConsulta.FieldByName('idCiudad').Value;
+
+end;
 
 procedure TFormUsuario.btnLimpiarClick(Sender: TObject);
 begin
@@ -354,233 +405,253 @@ end;
 
 procedure TFormUsuario.btnModificarClick(Sender: TObject);
 
-///////////////////////
+/// ////////////////////
 
 begin
-  if (txtCodigo.Text='') or (txtNombre.Text='') or (txtTelefono.Text='') or (txtEdad.Text='') or (txtContrasenna.Text='') then
-    begin
-      ShowMessage('Datos sin registrar');
-      exit;
-    end
+  if (txtCodigo.Text = '') or (txtNombre.Text = '') or (txtTelefono.Text = '')
+    or (txtEdad.Text = '') then
+  begin
+    ShowMessage('Datos sin registrar');
+    Exit;
+  end
   else
-    if MessageDlg('desea modificar los datos con el codigo: ''' + txtCodigo.Text + ''' ??',mtConfirmation,[mbYes,mbNo],0)=mrYes then
+    txtContrasenna.Visible := true;
+  Label7.Visible := true;
+
+  if MessageDlg('desea modificar los datos con el codigo: ''' + txtCodigo.Text +
+    ''' ??', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  begin
+    ADOQueryConsulta.SQL.Clear;
+    ADOQueryConsulta.SQL.Add('select * from usuario where idUsuario=:Codigo');
+    ADOQueryConsulta.Parameters.ParamByName('Codigo').Value :=
+      Trim(txtCodigo.Text);
+    ADOQueryConsulta.Open;
+
+    if (txtCodigo.Text <> ADOQueryConsulta.FieldByName('idusuario').AsString)
+    then
+    begin
+      ShowMessage('El codigo :Codigo no esta registrado');
+      ADOQueryConsulta.Parameters.ParamByName('Codigo').Value :=
+        Trim(txtCodigo.Text);
+      ActualizarConsulta;
+      LimpiarCampos;
+      Exit;
+    end
+    else
+    begin
+
+      if (txtCodigo.Text = (ADOQueryConsulta.FieldByName('idUsuario').AsString))
+        and (txtNombre.Text = (ADOQueryConsulta.FieldByName('nombreUsuario')
+        .AsString)) and
+        (txtTelefono.Text = (ADOQueryConsulta.FieldByName('telefonoUsuario')
+        .AsString)) and (DateTimePicker1.Date = ADOQueryConsulta.FieldByName
+        ('fechaNacimiento').Value) and
+        (txtEdad.Text = (ADOQueryConsulta.FieldByName('edadUsuario').AsString))
+        and (cmbCiudad.KeyValue = (ADOQueryConsulta.FieldByName('ciudadUsuario')
+        .AsString)) then
       begin
-        ADOQuery1.SQL.Clear;
-        ADOQuery1.SQL.Add('select * from usuario where idUsuario=:Codigo');
-        ADOQuery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-        ADOQuery1.Open;
+        ShowMessage('No hay cambio en los datos');
+      end
+      else
 
-        if(txtCodigo.Text <> ADOQuery1.FieldByName('idusuario').AsString) then
-          begin
-            ShowMessage('El codigo :Codigo no esta registrado');
-            ADOQuery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-            ActualizarConsulta;
-            LimpiarCampos;
-            Exit;
-          end
-        else
-          begin
+      begin
 
-            ADOQuery1.SQL.Clear;
-            ADOQuery1.SQL.Add('SELECT * FROM usuario WHERE idUsuario=:"Codigo"');
-            adoquery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-            ADOQuery1.Open;
+        try
 
-            if(txtCodigo.Text=(ADOQuery1.FieldByName('idUsuario').AsString)) and
-            (txtNombre.Text=(ADOQuery1.FieldByName('nombreUsuario').AsString)) and
-            (txtTelefono.Text=(ADOQuery1.FieldByName('telefonoUsuario').AsString)) and
-            (DateTimePicker1.Date=ADOQuery1.FieldByName('fechaNacimiento').Value) and
-            (txtEdad.Text=(ADOQuery1.FieldByName('edadUsuario').AsString)) and
-            (cmbCiudad.KeyValue=(ADOQuery1.FieldByName('ciudadUsuario').AsString)) and
-            (txtContrasenna.Text=(ADOQuery1.FieldByName('contrasennaUsuario').AsString)) then
-              begin
-                ShowMessage('igual');
-              end
-            else
+          DataModule2.ADOConnection1.BeginTrans;
 
-              begin
+          ADOQuery3.SQL.Clear;
+          ADOQuery3.SQL.Add
+            ('INSERT INTO Cusuario VALUES(:Codigo,:Nombre,:Telefono,:Fecha,:Edad,:Ciudad,:Contrasenna)');
+          ADOQuery3.Parameters.ParamByName('Codigo').Value :=
+            Trim(txtCodigo.Text);
+          ADOQuery3.Parameters.ParamByName('Nombre').Value :=
+            Trim(txtNombre.Text);
+          ADOQuery3.Parameters.ParamByName('Telefono').Value :=
+            Trim(txtTelefono.Text);
+          ADOQuery3.Parameters.ParamByName('Fecha').Value :=
+            Trim(DateToStr(DateTimePicker1.Date));
+          ADOQuery3.Parameters.ParamByName('Edad').Value := Trim(txtEdad.Text);
+          ADOQuery3.Parameters.ParamByName('Ciudad').Value :=
+            Trim(cmbCiudad.KeyValue);
+          ADOQuery3.Parameters.ParamByName('Contrasenna').Value :=
+            Trim(txtContrasenna.Text);
+          ADOQuery3.ExecSQL;
 
-                try
+          DataModule2.ADOConnection1.CommitTrans;
 
-                  DataModule2.ADOConnection1.BeginTrans;
+        except
 
-                  ADOQuery3.SQL.Clear;
-                  ADOQuery3.SQL.Add('INSERT INTO Cusuario VALUES(:Codigo,:Nombre,:Telefono,:Fecha,:Edad,:Ciudad,:Contrasenna)');
-                  ADOQuery3.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-                  ADOQuery3.Parameters.ParamByName('Nombre').Value:=Trim(txtNombre.Text);
-                  ADOQuery3.Parameters.ParamByName('Telefono').Value:=Trim(txtTelefono.Text);
-                  ADOQuery3.Parameters.ParamByName('Fecha').Value:=Trim(DateToStr(DateTimePicker1.Date));
-                  ADOQuery3.Parameters.ParamByName('Edad').Value:=Trim(txtEdad.Text);
-                  ADOQuery3.Parameters.ParamByName('Ciudad').Value:=Trim(cmbCiudad.KeyValue);
-                  ADOQuery3.Parameters.ParamByName('Contrasenna').Value:=Trim(txtContrasenna.Text);
-                  ADOQuery3.ExecSQL;
+          DataModule2.ADOConnection1.RollbackTrans;
+          Exit;
 
-                  dataModule2.ADOConnection1.CommitTrans;
+        end;
 
-                except
+        TRY
+          DataModule2.ADOConnection1.BeginTrans;
 
-                  DataModule2.ADOConnection1.RollbackTrans;
-                  EXIT;
+          ADOQuery4.SQL.Clear;
+          ADOQuery4.SQL.Add('SELECT * FROM usuario where idUsuario=:"Codigo"');
+          ADOQuery4.Parameters.ParamByName('Codigo').Value :=
+            StrToInt(Trim(txtCodigo.Text));
+          ADOQuery4.Open;
+          ADOQuery4.Edit;
+          ADOQuery4idUsuario.Value := StrToInt(txtCodigo.Text);
+          ADOQuery4nombreUsuario.Value := txtNombre.Text;
+          ADOQuery4telefonoUsuario.Value := txtTelefono.Text;
+          ADOQuery4fechaNacimiento.Value := DateTimePicker1.Date;
+          ADOQuery4edadUsuario.Value := StrToInt(txtEdad.Text);
+          ADOQuery4ciudadUsuario.Value := cmbCiudad.KeyValue;
+          ADOQuery4contrasennaUsuario.Value := txtContrasenna.Text;
 
-                end;
+          ADOQuery4.Post;
 
+          ShowMessage('Los datos han sido modificados');
 
+          DataModule2.ADOConnection1.CommitTrans;
 
-              end;
-          end;
-          TRY
-            DataModule2.ADOConnection1.BeginTrans;
+        EXCEPT
 
-            ADOQuery4.SQL.Clear;
-            ADOQuery4.SQL.Add('SELECT * FROM usuario where idUsuario=:"Codigo"');
-            ADOQuery4.Parameters.ParamByName('Codigo').Value:=StrToInt(Trim(txtCodigo.Text));
-            ADOQuery4.Open;
-            ADOQuery4.Edit;
-            ADOQuery4idUsuario.Value:=StrToInt(txtCodigo.text);
-            ADOQuery4nombreUsuario.Value:=txtNombre.text;
-            ADOQuery4telefonoUsuario.Value:=txtTelefono.text;
-            ADOQuery4fechaNacimiento.Value:=DateTimePicker1.Date;
-            ADOQuery4edadUsuario.Value:=StrToInt(txtEdad.text);
-            ADOQuery4ciudadUsuario.Value:=cmbCiudad.KeyValue;
-            ADOQuery4contrasennaUsuario.Value:=txtContrasenna.Text;
+          DataModule2.ADOConnection1.RollbackTrans;
+          Exit;
 
-            ADOQuery4.Post;
-
-            ShowMessage('Los datos han sido modificados');
-
-            DataModule2.ADOConnection1.CommitTrans;
-
-          EXCEPT
-
-            DataModule2.ADOConnection1.RollbackTrans;
-            EXIT;
-
-          END;
-
-
-          ActualizarConsulta;
-          LimpiarCampos;
+        END;
 
       end;
-   BloquearCampos;
-   txtCodigo.SetFocus;
+    end;
+
+    ActualizarConsulta;
+    LimpiarCampos;
+
+  end;
+  BloquearCampos;
+  txtCodigo.SetFocus;
 end;
 
-
 procedure TFormUsuario.btnEliminarClick(Sender: TObject);
+begin
+  if (txtCodigo.Text = '') then
   begin
-    if(txtCodigo.Text='') then
-      begin
-        ShowMessage('Inserte el codigo');
-        Exit;
-      end
+    ShowMessage('Inserte el codigo');
+    Exit;
+  end
+  else
+  begin
+    ADOQueryConsulta.SQL.Clear;
+    ADOQueryConsulta.SQL.Add('SELECT * FROM usuario WHERE idUsuario=:Codigo ');
+    ADOQueryConsulta.Parameters.ParamByName('Codigo').Value := Trim(txtCodigo.Text);
+    ADOQueryConsulta.Open;
+
+    if MessageDlg('quieres eliminar datos con un codigo ''' + txtCodigo.Text +
+      ''' ??', mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+    begin
+
+      if (txtCodigo.Text <> ADOQuery1.FieldByName('idUsuario').AsString) then
+
+        ShowMessage('El codigo ''' + txtCodigo.Text + ''' no esta registrado');
+      ActualizarConsulta;
+      Exit;
+    end
     else
-      begin
-        ADOQuery1.SQL.Clear;
-        ADOQuery1.SQL.Add('SELECT * FROM usuario WHERE idUsuario=:Codigo ');
-        ADOQuery1.Parameters.ParamByName('Codigo').Value:=Trim(txtCodigo.Text);
-        ADOQuery1.Open;
+    begin
 
-        if MessageDlg('quieres eliminar datos con un codigo ''' +txtCodigo.Text +''' ??',mtConfirmation,[mbYes,mbNo],0)=mrNo then
-          begin
+      TRY
+        DataModule2.ADOConnection1.BeginTrans;
 
-            if(txtCodigo.Text <> ADOQuery1.FieldByName('idUsuario').AsString) then
+        ADOQueryConsulta.SQL.Clear;
+        ADOQueryConsulta.SQL.Add('DELETE FROM usuario WHERE idUsuario= ''' +
+          txtCodigo.Text + ''' ');
+        ADOQueryConsulta.ExecSQL;
 
-              ShowMessage('El codigo ''' +txtCodigo.Text+''' no esta registrado');
-              ActualizarConsulta;
-              Exit;
-          end
-        else
-          begin
+        ActualizarConsulta;
+        LimpiarCampos;
 
-            TRY
-              DataModule2.ADOConnection1.BeginTrans;
+        ShowMessage('los datos se han eliminado con exito');
 
-              ADOQuery1.SQL.Clear;
-              ADOQuery1.SQL.Add('DELETE FROM usuario WHERE idUsuario= '''+txtCodigo.Text+''' ');
-              ADOQuery1.ExecSQL;
+        DataModule2.ADOConnection1.CommitTrans;
+      EXCEPT
+        DataModule2.ADOConnection1.RollbackTrans;
 
-              ActualizarConsulta;
-              LimpiarCampos;
-
-              ShowMessage('los datos se han eliminado con exito');
-
-              DataModule2.ADOConnection1.CommitTrans;
-            EXCEPT
-              DataModule2.ADOConnection1.RollbackTrans;
-
-              EXIT;
-            END;
-          end;
-      end;
-      BloquearCampos;
-      txtCodigo.SetFocus;
+        Exit;
+      END;
+    end;
   end;
+  BloquearCampos;
+  txtCodigo.SetFocus;
+end;
+
 procedure TFormUsuario.txtCodigoKeyPress(Sender: TObject; var Key: Char);
 var
-  i: integer;
+  I: Integer;
 
-  begin
+begin
 
-  //controlar entrada solo números y punto decimal
-  if ( StrScan('0123456789.' + chr(7) + chr(8), Key) = nil ) then Key := #0;
-  //cambiar punto decimal por coma
-  if key = '.' then key := ',';
-  //controlar entrada una sola coma
-  for i := 1 to length(txtCodigo.Text) do
-  if ( copy(txtCodigo.Text,i,1) = ',' ) and not ( StrScan(',', Key) = nil ) then Key := #0;
+  // controlar entrada solo números y punto decimal
+  if (StrScan('0123456789.' + chr(7) + chr(8), Key) = nil) then
+    Key := #0;
+  // cambiar punto decimal por coma
+  if Key = '.' then
+    Key := ',';
+  // controlar entrada una sola coma
+  for I := 1 to Length(txtCodigo.Text) do
+    if (copy(txtCodigo.Text, I, 1) = ',') and not(StrScan(',', Key) = nil) then
+      Key := #0;
 
 end;
 
 procedure TFormUsuario.txtNombreKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key in ['0'..'9'] then
-      begin
-        //Application.MessageBox('No puedes escribir numeros en ésta casilla!', 'Error de validación');
-        Key := #0;
+  if Key in ['0' .. '9'] then
+  begin
+    // Application.MessageBox('No puedes escribir numeros en ésta casilla!', 'Error de validación');
+    Key := #0;
 
-      end;
+  end;
 end;
 
 procedure TFormUsuario.txtTelefonoKeyPress(Sender: TObject; var Key: Char);
 var
-  i: integer;
+  I: Integer;
 
-  begin
+begin
 
-  //controlar entrada solo números y punto decimal
-  if ( StrScan('0123456789.' + chr(7) + chr(8), Key) = nil ) then
-  Key := #0;
+  // controlar entrada solo números y punto decimal
+  if (StrScan('0123456789.' + chr(7) + chr(8), Key) = nil) then
+    Key := #0;
 
-  //cambiar punto decimal por coma
-  if key = '.' then key := ',';
-  //controlar entrada una sola coma
-  for i := 1 to length(txtCodigo.Text) do
-  if ( copy(txtCodigo.Text,i,1) = ',' ) and not ( StrScan(',', Key) = nil ) then Key := #0;
+  // cambiar punto decimal por coma
+  if Key = '.' then
+    Key := ',';
+  // controlar entrada una sola coma
+  for I := 1 to Length(txtCodigo.Text) do
+    if (copy(txtCodigo.Text, I, 1) = ',') and not(StrScan(',', Key) = nil) then
+      Key := #0;
 
 end;
 
 procedure TFormUsuario.txtEdadKeyPress(Sender: TObject; var Key: Char);
 var
-  i: integer;
+  I: Integer;
 
+begin
+
+  // controlar entrada solo números y punto decimal
+  if (StrScan('0123456789.' + chr(7) + chr(8), Key) = nil) then
+  begin
+    Key := #0;
+
+  end
+  else
   begin
 
-  //controlar entrada solo números y punto decimal
-  if ( StrScan('0123456789.' + chr(7) + chr(8), Key) = nil ) then
-    begin
+  end;
+  // cambiar punto decimal por coma
+  if Key = '.' then
+    Key := ',';
+  // controlar entrada una sola coma
+  for I := 1 to Length(txtCodigo.Text) do
+    if (copy(txtCodigo.Text, I, 1) = ',') and not(StrScan(',', Key) = nil) then
       Key := #0;
-
-    end
-  else
-    begin
-
-    end;
-  //cambiar punto decimal por coma
-  if key = '.' then key := ',';
-  //controlar entrada una sola coma
-  for i := 1 to length(txtCodigo.Text) do
-  if ( copy(txtCodigo.Text,i,1) = ',' ) and not ( StrScan(',', Key) = nil ) then Key := #0;
 
 end;
 

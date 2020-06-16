@@ -10,8 +10,9 @@ uses
 
 begin
   Application.Initialize;
-  Application.CreateForm(TDataModule2, DataModule2);
   Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TDataModule2, DataModule2);
   Application.CreateForm(TFormUsuario, FormUsuario);
+
   Application.Run;
 end.

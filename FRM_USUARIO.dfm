@@ -154,6 +154,7 @@ object FormUsuario: TFormUsuario
       ListField = 'nombreDepartamento'
       ListSource = DataSourceDepartamento
       TabOrder = 5
+      OnClick = cmbDepartamentoClick
       OnExit = cmbDepartamentoExit
     end
     object cmbCiudad: TDBLookupComboBox
@@ -199,6 +200,7 @@ object FormUsuario: TFormUsuario
     TitleFont.Height = -11
     TitleFont.Name = 'MS Sans Serif'
     TitleFont.Style = []
+    OnCellClick = DBGrid1CellClick
   end
   object ADOQuery1: TADOQuery
     Active = True
@@ -206,29 +208,30 @@ object FormUsuario: TFormUsuario
     CursorType = ctStatic
     Parameters = <>
     SQL.Strings = (
-      'SELECT * FROM USUARIO')
+      
+        'SELECT idUsuario as Codigo,nombreUsuario as Nombre,telefonoUsuar' +
+        'io as Telefono,fechaNacimiento as Fecha_Nacimiento,edadUsuario a' +
+        's Edad, nombreCiudad as Ciudad '
+      'FROM usuario inner join ciudad on idCiudad = ciudadUsuario;')
     Left = 8
-    object ADOQuery1idUsuario: TIntegerField
-      FieldName = 'idUsuario'
+    object ADOQuery1Codigo: TIntegerField
+      FieldName = 'Codigo'
     end
-    object ADOQuery1nombreUsuario: TStringField
-      FieldName = 'nombreUsuario'
+    object ADOQuery1Nombre: TStringField
+      FieldName = 'Nombre'
     end
-    object ADOQuery1telefonoUsuario: TStringField
-      FieldName = 'telefonoUsuario'
+    object ADOQuery1Telefono: TStringField
+      FieldName = 'Telefono'
       Size = 15
     end
-    object ADOQuery1fechaNacimiento: TDateTimeField
-      FieldName = 'fechaNacimiento'
+    object ADOQuery1Fecha_Nacimiento: TDateTimeField
+      FieldName = 'Fecha_Nacimiento'
     end
-    object ADOQuery1edadUsuario: TIntegerField
-      FieldName = 'edadUsuario'
+    object ADOQuery1Edad: TIntegerField
+      FieldName = 'Edad'
     end
-    object ADOQuery1ciudadUsuario: TIntegerField
-      FieldName = 'ciudadUsuario'
-    end
-    object ADOQuery1contrasennaUsuario: TStringField
-      FieldName = 'contrasennaUsuario'
+    object ADOQuery1Ciudad: TStringField
+      FieldName = 'Ciudad'
     end
   end
   object DataSourceGrid: TDataSource
@@ -257,7 +260,6 @@ object FormUsuario: TFormUsuario
     Top = 192
   end
   object ADOQuery2: TADOQuery
-    Active = True
     Connection = DataModule2.ADOConnection1
     CursorType = ctStatic
     Parameters = <>
@@ -273,8 +275,8 @@ object FormUsuario: TFormUsuario
     Parameters = <>
     SQL.Strings = (
       'select * from departamento')
-    Left = 16
-    Top = 288
+    Left = 8
+    Top = 272
   end
   object ADOQuery4: TADOQuery
     Active = True
@@ -307,5 +309,15 @@ object FormUsuario: TFormUsuario
     object ADOQuery4contrasennaUsuario: TStringField
       FieldName = 'contrasennaUsuario'
     end
+  end
+  object ADOQueryConsulta: TADOQuery
+    Active = True
+    Connection = DataModule2.ADOConnection1
+    CursorType = ctStatic
+    Parameters = <>
+    SQL.Strings = (
+      'select * from usuario')
+    Left = 8
+    Top = 368
   end
 end
